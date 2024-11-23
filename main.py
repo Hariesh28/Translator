@@ -2,7 +2,6 @@ import streamlit as st
 from googletrans import Translator, LANGCODES, LANGUAGES
 from gtts import gTTS
 import tempfile
-import os
 
 def clean_input(text:str) -> str | None:
 
@@ -88,12 +87,34 @@ def update_translated_text(text:str='Translate', langCode:str=None):
             label_visibility='visible'
         )
 
+def update_audio(text:str, lang:str) -> None:
+
+    if lang == 'auto-detect': lang = LANGUAGES[Translator().detect(text=text).lang]
+
+    fileName = text_to_speech(
+        text=text,
+        lang=lang
+    )
+
+    if fileName is None:
+        print("Cannot access audio file")
+        st.write("No Audio File Available")
+        return
+
+    with open(fileName, 'rb') as file:
+        st.audio(
+            data=file.read(),
+            format='audio/mp3',
+            start_time=0,
+            loop=False,
+            autoplay=False
+        )
+
 st.set_page_config(
     page_title='Cultural Connect',
     page_icon='images\\page_icon.png',
     layout='wide'
 )
-
 
 titleCol, imageCol = st.columns(spec=[1, 7], gap='small', vertical_alignment='top')
 with titleCol:st.title("Translate")
@@ -135,13 +156,21 @@ inputText = st.text_area(
     label_visibility='visible'
 )
 
+sourceAudio = st.empty()
+
 placeHolder = st.empty()
 update_translated_text()
 
-if inputText:
-    translatedText, srcCode = translate_text(text=inputText, dest=destinationLang, src=sourceLang)
+destinationAudio = st.empty()
 
+if inputText:
+
+    with sourceAudio: update_audio(text=inputText, lang=sourceLang)
+
+    translatedText, srcCode = translate_text(text=inputText, dest=destinationLang, src=sourceLang)
     if translatedText: update_translated_text(text=translatedText, langCode=srcCode)
+
+    with destinationAudio: update_audio(text=translatedText, lang=destinationLang)
 
 st.markdown(
     """
