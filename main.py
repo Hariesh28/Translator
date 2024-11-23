@@ -11,7 +11,7 @@ def clean_input(text:str) -> str | None:
     return text.strip().lower()
 
 
-def translate_text(text:str, dest:str, src:str=None) -> str | None:
+def translate_text(text:str, dest:str, src:str='auto-detect') -> tuple[str, str|None] | None:
 
     translator = Translator()
 
@@ -20,26 +20,31 @@ def translate_text(text:str, dest:str, src:str=None) -> str | None:
         print("Invalid Destination Format")
         return None
 
-    if not src: src = translator.detect(text=text).lang
+    if src == 'auto-detect': srcCode = translator.detect(text=text).lang
     else:
         src = clean_input(src)
         if not src:
             print("Invalid Source Language")
             update_translated_text("Invalid Source Language")
             return None
+        srcCode = LANGCODES[src]
 
     try:
         result = translator.translate(
             text=text,
             dest=LANGCODES[dest],
-            src=src
+            src=srcCode
         )
 
     except KeyError:
         print("Destination Not Found !")
         return None
 
-    return result.text
+    except Exception as e:
+        print(f"Translation Error: {e}")
+        return None
+
+    return (result.text, srcCode) if src == 'auto-detect' else (result.text, None)
 
 def text_to_speech(text:str, lang:str) -> str | None:
 
@@ -70,11 +75,11 @@ def text_to_speech(text:str, lang:str) -> str | None:
         print(f"TTS Error: {error}")
         return None
 
-def update_translated_text(text:str='Translate'):
+def update_translated_text(text:str='Translate', langCode:str=None):
 
     with placeHolder:
         st.text_area(
-            label='Translated Content',
+            label=f'Translated Content{"" if langCode is None else f". Detected: {LANGUAGES[langCode].title()}"}',
             height=200,
             key=f'translatedText_{text}',
             help='Displays the translated text',
@@ -99,8 +104,8 @@ col1, col2 = st.columns(spec=2, gap='medium', vertical_alignment='top')
 with col1:
     sourceLang = st.selectbox(
         label='Source',
-        options=LANGCODES.keys(),
-        index=list(LANGCODES.keys()).index('english'),
+        options=['auto-detect'] + list(LANGCODES.keys()),
+        index=0,
         key='source',
         help='Select the source of the input text',
         placeholder='Choose the Source Language',
@@ -134,9 +139,9 @@ placeHolder = st.empty()
 update_translated_text()
 
 if inputText:
-    translatedText = translate_text(text=inputText, dest=destinationLang, src=sourceLang)
+    translatedText, srcCode = translate_text(text=inputText, dest=destinationLang, src=sourceLang)
 
-    if translatedText: update_translated_text(text=translatedText)
+    if translatedText: update_translated_text(text=translatedText, langCode=srcCode)
 
 st.markdown(
     """
