@@ -137,7 +137,7 @@ if __name__ == '__main__':
 
     titleCol, imageCol = st.columns(spec=[1, 7], gap='small', vertical_alignment='top')
     with titleCol:st.title("Translate")
-    with imageCol: st.image('images\\title_icon.png', width=64)
+    with imageCol: st.image('images/title_icon.png', width=64)
 
     col1, col2 = st.columns(spec=2, gap='medium', vertical_alignment='top')
 
