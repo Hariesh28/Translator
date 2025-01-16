@@ -62,6 +62,10 @@ Make sure you have the following installed:
 3. Press Ctrl+Enter to get the result instantly.
 4. (Optional) Save or copy the translated text for further use.
 
+## Deployment
+
+The app is deployed at: [https://translatorrrr.streamlit.app/](https://translatorrrr.streamlit.app/)
+
 ## Contributing 🤝
 
 We welcome contributions to enhance the functionality of the translator. Please follow these steps:
